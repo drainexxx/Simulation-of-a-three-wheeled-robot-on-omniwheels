@@ -217,6 +217,8 @@ while True:
         control_points_coords = []
         trail = []
         after_auto_break_state = 0
+        x_imag, y_imag = x, y
+        x_imag_prev, y_imag_prev = x, y
 
     #езда по контрольным точкам в авто режиме
     if (is_auto):
@@ -376,8 +378,10 @@ while True:
     y_change = y - y_prev
     x_imag_prev = x_imag
     y_imag_prev = y_imag
-    x_imag += x_change + random.uniform(-precision_settings.laser_accuracy, precision_settings.laser_accuracy)
-    y_imag += y_change + random.uniform(-precision_settings.laser_accuracy, precision_settings.laser_accuracy)
+    if abs(x_change) > 0:
+        x_imag += x_change + random.uniform(-precision_settings.laser_accuracy, precision_settings.laser_accuracy)
+    if abs(y_change) > 0:
+        y_imag += y_change + random.uniform(-precision_settings.laser_accuracy, precision_settings.laser_accuracy)
 
     angle += speed_real[2]
 
