@@ -19,13 +19,13 @@ WIDTH, HEIGHT = 1000, 1000
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Движение точки")
 
-background_image = pygame.image.load("pole.png")
+background_image = pygame.image.load("pole2.png")
 
 # Часть кода которая отвечает за робота
 player_image = pygame.image.load("rob.png")
 player_center = player_image.get_rect().center
 
-start_pos = (266, 671)
+start_pos = (185, 640)
 
 # Список для хранения координат предыдущего положения точки
 trail = []
@@ -219,6 +219,7 @@ while True:
         after_auto_break_state = 0
         x_imag, y_imag = x, y
         x_imag_prev, y_imag_prev = x, y
+        current_gear = 'neutral'
 
     #езда по контрольным точкам в авто режиме
     if (is_auto):
