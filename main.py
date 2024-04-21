@@ -356,6 +356,7 @@ while True:
             vx, vy, wc = 0, 0, 0
             w_actual = [0, 0, 0]
             after_auto_break_state = 0
+            control_points_coords_achieve_time_raw.append(timer())
             for i in range(1, len(control_points_coords_achieve_time_raw)-1):
                     control_points_coords_achieve_time_real.append(control_points_coords_achieve_time_raw[i]-control_points_coords_achieve_time_raw[i-1])
 
