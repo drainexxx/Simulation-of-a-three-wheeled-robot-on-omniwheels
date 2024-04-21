@@ -304,22 +304,22 @@ while True:
     if (is_auto==0 and is_dynamic):
         if keys[pygame.K_LEFT]==False:
             if vx > 0:
-                vx -= 0.05
+                vx -= 0.01
         if keys[pygame.K_RIGHT]==False:
             if vx < 0:
-                vx += 0.05
+                vx += 0.01
         if keys[pygame.K_UP]==False:
             if vy > 0:
-                vy -= 0.05
+                vy -= 0.01
         if keys[pygame.K_DOWN]==False:
             if vy < 0:
-                vy += 0.05
+                vy += 0.01
         if keys[pygame.K_q]==False:
             if wc > 0:
-                wc -= 0.05
+                wc -= 0.01
         if keys[pygame.K_w]==False:
             if wc < 0:
-                wc += 0.05
+                wc += 0.01
 
     
 
