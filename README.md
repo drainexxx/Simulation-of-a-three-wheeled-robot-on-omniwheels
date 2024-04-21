@@ -20,3 +20,6 @@ Simulation of a robotic tricycle platform taking into account friction forces. A
 - 1 - Disable/Enable dynamics
 - 2 - Disable/Enable bad wheels physics
 - 3 - Disable/Enable movement by laser sensor
+- p - Easter egg
+- r - full reset
+- b - reset without deleting trajectory

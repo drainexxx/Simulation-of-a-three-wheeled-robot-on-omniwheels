@@ -27,6 +27,8 @@ player_center = player_image.get_rect().center
 
 start_pos = (185, 640)
 
+friction_koef = 0.01
+
 # Список для хранения координат предыдущего положения точки
 trail = []
 # Создание объекта шрифта
@@ -62,9 +64,14 @@ angle = 0
 transmission = 0
 
 multic = R/3
+
 M_R = np.array([[0, np.sqrt(3)/2, -np.sqrt(3)/2],
                     [-1, 1/2, 1/2],
                     [-1/L, -1/L, -1/L]])
+
+# M_R = np.array([[math.sin(0+angle), math.sin(2*math.pi/3+angle), math.sin(4*math.pi/3+angle)],
+#                     [-math.cos(0+angle), -math.cos(2*math.pi/3+angle), -math.cos(4*math.pi/3+angle)],
+#                      [-1/L, -1/L, -1/L]])
 
 M_R = np.dot(multic, M_R)
 
@@ -220,6 +227,16 @@ while True:
         x_imag, y_imag = x, y
         x_imag_prev, y_imag_prev = x, y
         current_gear = 'neutral'
+    if keys[pygame.K_b]: #reset button
+        x, y = start_pos[0], start_pos[1]
+        vx, vy, wc, angle = 0, 0, 0, 0
+        distances_to_control_point = []
+        closest_distances_to_control_points = []
+        trail = []
+        after_auto_break_state = 0
+        x_imag, y_imag = x, y
+        x_imag_prev, y_imag_prev = x, y
+        current_gear = 'neutral'
 
     #езда по контрольным точкам в авто режиме
     if (is_auto):
@@ -258,12 +275,6 @@ while True:
                 is_auto = 0
                 after_auto_break_state = 1
                 
-                
-                
-
-                
-
-
     # Изменение передаточного числа
     if keys[pygame.K_z]:
         transmission = 0.02
@@ -304,22 +315,22 @@ while True:
     if (is_auto==0 and is_dynamic):
         if keys[pygame.K_LEFT]==False:
             if vx > 0:
-                vx -= 0.01
+                vx -= 1 * friction_koef
         if keys[pygame.K_RIGHT]==False:
             if vx < 0:
-                vx += 0.01
+                vx += 1 * friction_koef
         if keys[pygame.K_UP]==False:
             if vy > 0:
-                vy -= 0.01
+                vy -= 1 * friction_koef
         if keys[pygame.K_DOWN]==False:
             if vy < 0:
-                vy += 0.01
+                vy += 1 * friction_koef
         if keys[pygame.K_q]==False:
             if wc > 0:
-                wc -= 0.01
+                wc -= 1 * friction_koef
         if keys[pygame.K_w]==False:
             if wc < 0:
-                wc += 0.01
+                wc += 1 * friction_koef
 
     
 
@@ -343,6 +354,7 @@ while True:
                     control_points_coords_achieve_time_real.append(control_points_coords_achieve_time_raw[i]-control_points_coords_achieve_time_raw[i-1])
 
             res_time = timer()-auto_start_time
+            print("##########################################")
             print("Общее время движения: ", res_time)
             print("Время движения до каждой контрольной точки")    
             print(control_points_coords_achieve_time_real)
@@ -364,7 +376,10 @@ while True:
     if (is_bad_wheels):
         w_actual = change_velocity_randomly(w_actual[0], w_actual[1], w_actual[2])
 
-    
+    if keys[pygame.K_p]:
+        w_actual[0] = 4
+        w_actual[1] = 4
+        w_actual[2] = 4
 
     # Реальные значения скоростей
     speed_real = forward_task(w_actual[0], w_actual[1], w_actual[2])
