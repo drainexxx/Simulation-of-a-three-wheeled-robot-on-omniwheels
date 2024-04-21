@@ -332,6 +332,9 @@ while True:
             else:
                 w_actual[i] = 0
         
+        if (not is_dynamic):
+            vx, vy = 0, 0
+
         if (sum(w_actual) < 0.004 or (vx < 0.06 and vy < 0.06)):
             vx, vy, wc = 0, 0, 0
             w_actual = [0, 0, 0]
