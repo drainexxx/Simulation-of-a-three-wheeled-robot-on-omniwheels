@@ -212,6 +212,7 @@ while True:
         is_auto = 1
         auto_start_time = timer()
         control_points_coords_achieve_time_raw = [auto_start_time]
+        control_points_coords_achieve_time_real = []
         current_destination_control_point = 0
         after_auto_break_state = 0
         distances_to_control_point = []
