@@ -91,7 +91,7 @@ is_auto = 0
 time_to_display = 0
 current_destination_control_point = 0
 after_auto_break_state = 0
-
+brake_ticks = 0
 #настройки движения
 is_dynamic = True
 is_bad_wheels = True
@@ -227,6 +227,7 @@ while True:
         x_imag, y_imag = x, y
         x_imag_prev, y_imag_prev = x, y
         current_gear = 'neutral'
+        brake_ticks = 0
     if keys[pygame.K_b]: #reset button
         x, y = start_pos[0], start_pos[1]
         vx, vy, wc, angle = 0, 0, 0, 0
@@ -237,6 +238,7 @@ while True:
         x_imag, y_imag = x, y
         x_imag_prev, y_imag_prev = x, y
         current_gear = 'neutral'
+        brake_ticks = 0
 
     #езда по контрольным точкам в авто режиме
     if (is_auto):
@@ -339,14 +341,15 @@ while True:
     if (after_auto_break_state):
         for i in range(len(w_actual)):
             if w_actual[i] > 0.02:
-                w_actual[i] /= 10
+                w_actual[i] /= 8
+                brake_ticks +=1
             else:
                 w_actual[i] = 0
         
         if (not is_dynamic):
             vx, vy = 0, 0
 
-        if (sum(w_actual) < 0.004 or (vx < 0.06 and vy < 0.06)):
+        if (sum(w_actual) < 0.004) or ((vx < 0.1 and vy < 0.1)) or brake_ticks > 20:
             vx, vy, wc = 0, 0, 0
             w_actual = [0, 0, 0]
             after_auto_break_state = 0
