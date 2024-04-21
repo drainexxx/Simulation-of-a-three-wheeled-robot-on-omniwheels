@@ -39,9 +39,11 @@ w_2 = 0
 w_3 = 0
 w_imax = 50
 
+variant = 9
+
 wc = 0
-L = 1
-R = 0.3
+L = 0.1 * variant
+R = 0.03 * variant
 
 vx = 0
 vy = 0
@@ -70,7 +72,7 @@ def forward_task(w_1, w_2, w_3):
     vy = result[1][0]
     wc = result[2][0]
 
-    print(vx, vy, wc)
+    #print(vx, vy, wc)
     return (vx, vy, wc)
 
 # Решение обратной задачи кинематики
@@ -221,8 +223,8 @@ while True:
 
     # Отображение значений скоростей по осям
 
-    v_text = font.render(f"vx: {speed_real[0]}, vy: {speed_real[1]}, wc: {speed_real[2]}", True, BLUE)
-    w_text = font.render(f"W_1: {w_actual[0]}, W_2: {w_actual[1]}, W_3: {w_actual[2]}, ", True, BLUE)
+    v_text = font.render(f"vx: {speed_real[0]:.4f}, vy: {speed_real[1]:.4f}, wc: {speed_real[2]:.4f}", True, BLUE)
+    w_text = font.render(f"W_1: {w_actual[0]:.4f}, W_2: {w_actual[1]:.4f}, W_3: {w_actual[2]:.4f}, ", True, BLUE)
 
     screen.blit(v_text, (10, 50))
     screen.blit(w_text, (10, 100))
@@ -231,3 +233,12 @@ while True:
 
     # Задержка для плавного движения
     pygame.time.delay(20)
+
+
+    for event in pygame.event.get():
+        if event.type == pygame.MOUSEBUTTONDOWN:  # or MOUSEBUTTONDOWN depending on what you want.
+            print(event.pos)
+        elif event.type == pygame.QUIT:
+            quit()
+
+    pygame.display.update()
