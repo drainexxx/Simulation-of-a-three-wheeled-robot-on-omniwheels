@@ -9,6 +9,7 @@ import colors
 from timeit import default_timer as timer
 import statistics
 import matplotlib.pyplot as plt
+import precision_settings
 
 # Инициализация Pygame
 pygame.init()
@@ -33,7 +34,9 @@ font = pygame.font.Font(None, 24)
 
 # Начальное положение точки
 x, y = start_pos[0], start_pos[1]
+x_prev, y_prev = start_pos[0], start_pos[1]
 x_imag, y_imag = start_pos[0], start_pos[1]
+x_imag_prev, y_imag_prev = start_pos[0], start_pos[1]
 
 # Объявляем переменные
 #.............................................................................
@@ -43,9 +46,9 @@ w_2 = 0
 w_3 = 0
 w_imax = 10 * variant * 2 * math.pi
 
-desired_movement_precision = 2 #желаемая точность движения
+#настройка скорости
 speed_koef = 1
-current_transmission = 'neutral'
+current_gear = 'neutral'
 
 wc = 0
 L = 0.1 * variant
@@ -85,6 +88,7 @@ after_auto_break_state = 0
 #настройки движения
 is_dynamic = True
 is_bad_wheels = True
+use_imag_laser = True
 #...............................................................
 
 # Решение прямой задачи кинематики
@@ -135,9 +139,9 @@ def recalc_velocity(w1, w2, w3):
 # Неравномерное вращение колес
 def change_velocity_randomly(w_1_ideal, w_2_ideal, w_3_ideal):
     random.seed(a=None)
-    w_1_bad = random.uniform(0.9, 1) * w_1_ideal
-    w_2_bad = random.uniform(0.9, 1) * w_2_ideal
-    w_3_bad = random.uniform(0.9, 1) * w_3_ideal
+    w_1_bad = random.uniform(precision_settings.wheel_under, precision_settings.wheel_over) * w_1_ideal
+    w_2_bad = random.uniform(precision_settings.wheel_under, precision_settings.wheel_over) * w_2_ideal
+    w_3_bad = random.uniform(precision_settings.wheel_under, precision_settings.wheel_over) * w_3_ideal
 
     return [w_1_bad, w_2_bad, w_3_bad]
 
@@ -178,6 +182,8 @@ while True:
                 is_dynamic = not is_dynamic
             if event.key == pygame.K_2:
                 is_bad_wheels = not is_bad_wheels
+            if event.key == pygame.K_3:
+                use_imag_laser = not use_imag_laser
             if event.key == pygame.K_o: #графики движения
                 fig, axs = plt.subplots(2)
                 axs[0].plot(closest_distances_to_control_points)
@@ -205,17 +211,21 @@ while True:
         closest_distances_to_control_points = []
     if keys[pygame.K_r]: #reset button
         x, y = start_pos[0], start_pos[1]
-        vx, vy = 0, 0
+        vx, vy, wc, angle = 0, 0, 0, 0
         distances_to_control_point = []
         closest_distances_to_control_points = []
         control_points_coords = []
         trail = []
         after_auto_break_state = 0
 
-    #езда по контрольным точкам
+    #езда по контрольным точкам в авто режиме
     if (is_auto):
-        diff_x = control_points_coords[current_destination_control_point][0]-x
-        diff_y = control_points_coords[current_destination_control_point][1]-y
+        if (use_imag_laser):
+            diff_x = control_points_coords[current_destination_control_point][0]-x_imag
+            diff_y = control_points_coords[current_destination_control_point][1]-y_imag
+        else:
+            diff_x = control_points_coords[current_destination_control_point][0]-x
+            diff_y = control_points_coords[current_destination_control_point][1]-y
         destination_vector = (diff_x, diff_y)
         destination_vector_normalized = normalize_vector(destination_vector)
         
@@ -236,7 +246,7 @@ while True:
 
         distances_to_control_point.append(math.sqrt(diff_x * diff_x + diff_y * diff_y))
 
-        if (math.sqrt(diff_x * diff_x + diff_y * diff_y) < desired_movement_precision):
+        if (math.sqrt(diff_x * diff_x + diff_y * diff_y) < precision_settings.desired_movement_precision):
             closest_distances_to_control_points.append(min(distances_to_control_point))
             distances_to_control_point = []
             control_points_coords_achieve_time_raw.append(timer())
@@ -254,18 +264,18 @@ while True:
     # Изменение передаточного числа
     if keys[pygame.K_z]:
         transmission = 0.02
-        current_transmission = 1
+        current_gear = 1
         speed_koef = 1
     if keys[pygame.K_x]:
         transmission = 0.05
-        current_transmission = 2
+        current_gear = 2
         speed_koef = 2
     if keys[pygame.K_c]:
         transmission = 0.2
-        current_transmission = 3
+        current_gear = 3
         speed_koef = 3
     if keys[pygame.K_a]:
-        current_transmission = 'neutral'
+        current_gear = 'neutral'
         transmission = 0
 
 
@@ -323,11 +333,10 @@ while True:
             vx, vy, wc = 0, 0, 0
             w_actual = [0, 0, 0]
             after_auto_break_state = 0
-
-            for i in range(1, len(control_points_coords_achieve_time_raw)):
+            for i in range(1, len(control_points_coords_achieve_time_raw)-1):
                     control_points_coords_achieve_time_real.append(control_points_coords_achieve_time_raw[i]-control_points_coords_achieve_time_raw[i-1])
 
-            res_time = sum(control_points_coords_achieve_time_real) 
+            res_time = timer()-auto_start_time
             print("Общее время движения: ", res_time)
             print("Время движения до каждой контрольной точки")    
             print(control_points_coords_achieve_time_real)
@@ -357,19 +366,24 @@ while True:
     trail.append((x, y))
 
     # Обновление координат точки
+    x_prev = x
     x += speed_real[0]
+    y_prev = y
     y += speed_real[1]
+    
+    #Обновление координат на лазере
+    x_change = x - x_prev
+    y_change = y - y_prev
+    x_imag_prev = x_imag
+    y_imag_prev = y_imag
+    x_imag += x_change + random.uniform(-precision_settings.laser_accuracy, precision_settings.laser_accuracy)
+    y_imag += y_change + random.uniform(-precision_settings.laser_accuracy, precision_settings.laser_accuracy)
 
     angle += speed_real[2]
 
     # result = np.dot(W_R, V_R)
 
     player_center = (x, y)
-
-    
-
-        
-
 
     # Поворот изображения объекта
     rotated_player = pygame.transform.rotate(player_image, angle)
@@ -393,14 +407,14 @@ while True:
 
     # Вывод текстовой информации
 
-    line1_text = font.render(f"vx: {speed_real[0]:.4f}, vy: {speed_real[1]:.4f}, wc: {speed_real[2]:.4f}, break_state: {after_auto_break_state}, x: {x:.4f}, y: {y:.4f}", True, colors.BLUE)
-    line2_text = font.render(f"W_1: {w_actual[0]:.4f}, W_2: {w_actual[1]:.4f}, W_3: {w_actual[2]:.4f}, current_transmission {current_transmission}", True, colors.BLUE)
-    settings_text = font.render(f"is_dynamic: {is_dynamic}, is_bad_wheels: {is_bad_wheels}", True, colors.BLUE)
+    line1_text = font.render(f" break_state: {after_auto_break_state}, x: {x:.4f}, y: {y:.4f}, x_imag: {x_imag:.4f}, y_imag: {y_imag:.4f}", True, colors.BLUE)
+    line2_text = font.render(f"vx: {speed_real[0]:.4f}, vy: {speed_real[1]:.4f}, wc: {speed_real[2]:.4f}, W_1: {w_actual[0]:.4f}, W_2: {w_actual[1]:.4f}, W_3: {w_actual[2]:.4f}, current_gear {current_gear}", True, colors.BLUE)
+    settings_text = font.render(f"is_dynamic: {is_dynamic}, is_bad_wheels: {is_bad_wheels}, use_imag_laser: {use_imag_laser}", True, colors.BLUE)
     screen.blit(line1_text, (10, 50))
     screen.blit(line2_text, (10, 100))
     screen.blit(settings_text, (10, 150))
     if (len(control_points_coords) and current_destination_control_point < len(control_points_coords)):
-        point_info_text = font.render(f"Current: point x: {control_points_coords[current_destination_control_point][0]:.1f}, point y: {control_points_coords[current_destination_control_point][1]:.1f}, time between point: {time_to_display:.2f} ", True, colors.BLUE)
+        point_info_text = font.render(f"Current: point x: {control_points_coords[current_destination_control_point][0]:.1f}, point y: {control_points_coords[current_destination_control_point][1]:.1f}, time between point: {time_to_display:.2f}, movement time {timer()-auto_start_time if is_auto else 0:.2f}", True, colors.BLUE)
         screen.blit(point_info_text, (10, 200))
     # Перерисовка экрана
     pygame.display.flip()
