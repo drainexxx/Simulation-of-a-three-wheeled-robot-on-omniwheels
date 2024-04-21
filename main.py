@@ -228,7 +228,9 @@ while True:
         x_imag_prev, y_imag_prev = x, y
         current_gear = 'neutral'
         brake_ticks = 0
+        is_auto = 0
     if keys[pygame.K_b]: #reset button
+        is_auto = 0
         x, y = start_pos[0], start_pos[1]
         vx, vy, wc, angle = 0, 0, 0, 0
         distances_to_control_point = []
