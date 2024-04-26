@@ -22,4 +22,4 @@ Simulation of a robotic tricycle platform taking into account friction forces. A
 - 3 - Disable/Enable movement by laser sensor
 - p - Easter egg
 - r - full reset
-- b - reset without deleting trajectory
+- b - reset without deleting trajectory (soft-reset)
